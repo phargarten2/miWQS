@@ -1,0 +1,40 @@
+Package: miWQS
+Title: Multiple Imputation using Weighted Quantile Sum Regression
+Version: 0.1.0
+Date: 2019-06-25
+Authors@R: c( person("Paul M.", "Hargarten", email = "hargartenp@vcu.edu", role = c("aut", "cre")),      
+              person("David C.", "Wheeler", email = "david.wheeler@vcuhealth.org ", role = c("aut","rev","ths")) )
+Depends: R (>= 3.5.0)
+Imports:  stats, utils, grid,
+          coda (>= 0.19-2),
+      	  glm2 (>= 1.2.1),
+      	  ggplot2 (>= 3.1.0),
+      	  Hmisc (>= 4.1-1),
+    	  invgamma (>= 1.1),
+	  MASS (>= 7.3-49),
+          MCMCpack (>= 1.4-4),
+          matrixNormal (>= 0.0.0),
+	  mvtnorm (>= 1.0-10), 
+          tmvtnorm (>= 1.4-10),
+ 	  rlist (>= 0.4.6.1),   
+      	  Rsolnp (>= 1.16),
+      	  survival (>= 2.43-1),
+	  truncnorm (>= 1.0-8),
+          tidyr (>= 0.8.2)
+Suggests: GGally (>= 1.4.0), 
+          knitr (>= 1.23),
+          mice (>= 3.3.0), 
+          pander (>= 0.6.3), 
+          rmarkdown (>= 1.13),
+	  scales (>= 1.0.0), 
+	  sessioninfo (>= 1.1.1),  
+          spelling (>= 2.0),
+          testthat (>=  2.0.1),
+          wqs (>= 0.0.1)
+Description: The `miWQS` package handles the uncertainty due to below the detection limit in a correlated component mixture problem.  Researchers want to determine if a set/mixture of continuous and correlated components/chemicals is associated with an outcome and if so, which components are important in that mixture. These components share a common outcome but are interval-censored between zero and low thresholds, or detection limits, that may be different across the components. The `miWQS` package applies the multiple imputation (MI) procedure to the weighted quantile sum regression (WQS) methodology for continuous, binary, or count outcomes.  The two imputation models coded in `miWQS` package are: bootstrapping imputation (Lubin et.al (2004) <doi:10.1289/ehp.7199>) and Bayesian imputation.  
+License: GPL-3
+Encoding: UTF-8
+LazyData: TRUE
+Language: en-US
+BugReports: https://github.com/phargarten2/miWQS/issues
+RoxygenNote: 6.1.1
