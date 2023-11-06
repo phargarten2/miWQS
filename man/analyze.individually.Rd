@@ -4,64 +4,66 @@
 \alias{analyze.individually}
 \title{Performing Individual Chemical Analysis}
 \usage{
-analyze.individually(y, X, Z = NULL, family = c("gaussian", "binomial",
-  "poisson"), offset = NULL)
+analyze.individually(
+  y,
+  X,
+  Z = NULL,
+  family = c("gaussian", "binomial", "poisson"),
+  offset = NULL
+)
 }
 \arguments{
-\item{y}{Outcome: numeric vector or factor. Assumed to follow an exponential family distribution.}
+\item{y}{Outcome: numeric vector or factor. Assumed to be complete, and missing outcomes are ignored. Assumed to follow an exponential family distribution given in \code{family}.}
 
-\item{X}{Components/chemicals to be combined into an index; a numeric matrix or data frame.}
+\item{X}{Components/chemicals to be combined into an index; a numeric matrix or data-frame.}
 
-\item{Z}{Covariates used in WQS. If none, enter NULL. Ideally, a matrix; but Z can be a vector or data frame. Assumed to be complete; observations with missing covariate values are ignored, with a warning.}
+\item{Z}{Any covariates used. Ideally, a numeric matrix, but Z can be a factor, vector or data-frame. Assumed to be complete; observations with missing covariate values are ignored with a warning printed. If none, enter NULL.}
 
 \item{family}{The distribution of outcome y. A character value:
-if equal to "gaussian" a linear model is implemented,
-if equal to "binomial" a logistic model is implemented,
-if equal to "poisson", a log-link rate (or count) model is implemented.
-if equal to "negbinom", a negative binomial model is implemented. BETA-TEST. IF THIS DOESN'T WORK THEN REMOVE HERE --ADDED 5/23/19.
-Default: "gaussian". See \code{\link[stats]{family}} in stats package. Passed to glm2.}
+if equal to "gaussian" a linear model is implemented;
+if equal to "binomial" a logistic model is implemented;
+if equal to "poisson", a log-link (rate or count) model is implemented.
+See \code{\link[stats]{family}} in the \pkg{stats} package. Passed to \pkg{glm2}. Default: "gaussian".}
 
-\item{offset}{The at-risk population used when modeling rates in Poisson regression. A numeric vector of length equal to the length(y).  Default: If there is no offset, set to NULL (converted to a vector of ones inside the function) so a count Poisson regression is done.  Passed to \pkg{glm2}. See details for more information.}
+\item{offset}{The at-risk population used as a numeric vector of length equal to the number of subjects when modeling rates in Poisson regression. Passed to \pkg{glm2}.  Default: If there is no offset, enter NULL.}
 }
 \value{
-A dataframe of statistics of individual chemical analysis is returned:\describe{
- {chemical.name}{name of the component}
- {estimate}{the estimate of log chemical effect}
- {Std.Error}{the standard error of log chemical effect}
- {AIC}{Model Fit. See \code{\link[stats]{AIC}}.}
- }
-}
-\description{
-Performs individual chemical analyses to determine constraint for the overall mixture effect on the outcome (beta1) in WQS regression. Each chemical individually is regressed by the outcome, after adjusting for any covariates. A data frame of statistics from these analyses is returned.
-}
-\details{
-Individual chemical analyses with the outcome can be used to determine whether the mixture of chemicals is positively or negatively related to the outcome. The constraint whether the overall mixture effect,  beta_1 , is positive or negative is controlled by b1.pos argument in \code{\link{estimate.wqs}}.  The b1.pos argument is TRUE if the overall chemical mixture effect is positively related to the outcome; otherwise, it is negatively related to the outcome.
-For each analysis, the outcome is regressed on the log of the observed values for each chemical and any other covariates Z, if they exist. This was accomplished using \code{\link[glm2]{glm2}}.  We summarized the results by recording the chemical name, estimating the log chemical effect and its standard error on the outcome, and using the Akaike Information Criterion (AIC) to indicate model fit.
-
-By looking at the output, one can decide whether the chemical mixture is positive or negative. Generally, if the sign of estimates is mainly positive, we would decide to make b1.pos in \code{\link{estimate.wqs}} to be TRUE. This is just one approach to determine the direction of this constraint.
-
-A dataframe of statistics of individual chemical analysis is returned: \describe{
+A data-frame from statistics of individual chemical analyses is returned: \describe{
  \item{chemical.name}{name of the component}
  \item{estimate}{the estimate of log chemical effect}
  \item{Std.Error}{the standard error of log chemical effect}
- \item{AIC}{Model Fit. See \code{\link[stats]{AIC}}.}
+ \item{AIC}{Model Fit. See \code{stats::\link[stats]{AIC}}.}
  }
 }
-\examples{
-#Binomial Example
-data("simdata87")
-analyze.individually( y = simdata87$y.scenario, X = simdata87$X.true, Z = simdata87$Z.sim,
-                 family = "binomial")
-# Here, most of the "Estimate", which is the log_odds of each log of the
-# chemical has on the outcome, are positive, possibly indicating a positive
-# relationship between mixture of chemicals and the outcome.
+\description{
+An accessory function for \code{estimate.wqs()}. Performs individual chemical analyses to determine the constraint for the overall mixture effect on the outcome (\eqn{\beta_1}) in WQS regression. After adjusting for any covariates, the outcome regresses on each chemical \emph{individually}. Returns a data-frame of statistics from these analyses.
+}
+\details{
+Individual chemical analyses with the outcome can be used to determine whether the mixture of chemicals is positively or negatively related to the outcome. The constraint whether the overall mixture effect,  \eqn{\beta_1}, is positive or negative is controlled by b1.pos argument in \code{\link{estimate.wqs}}.  The b1.pos argument is TRUE if the overall chemical mixture effect is positively related to the outcome; otherwise, it is negatively related to the outcome.
+For each analysis, the outcome is regressed on the log of the observed values for each chemical and any other covariates Z, if they exist. This was accomplished using \code{\link[glm2]{glm2}}.  We summarized the results by recording the chemical name, estimating the log chemical effect and its standard error on the outcome, and using the Akaike Information Criterion (AIC) to indicate model fit.
 
+By looking at the output, one can decide whether the chemical mixture is positive or negative. Generally, if the sign of estimates is mainly positive, we would decide to make b1.pos in \code{\link{estimate.wqs}} to be TRUE. This is just one approach to determine the direction of this constraint. Alternatively, one can conduct a WQS analysis for the positively related chemicals and another WQS analysis for the negatively related chemicals.
+}
+\examples{
+# Binomial Example
+data("simdata87")
+analyze.individually(
+  y = simdata87$y.scenario, X = simdata87$X.true, Z = simdata87$Z.sim,
+  family = "binomial"
+)
+# The "Estimate" column contains the log_odds of each log of the
+# chemical on the outcome. Most are positive, which indicates a possible
+# positive relationship between mixture of chemicals and the outcome.
 }
 \seealso{
-Other wqs: \code{\link{coef.wqs}},
-  \code{\link{do.many.wqs}}, \code{\link{estimate.wqs}},
-  \code{\link{make.quantile.matrix}},
-  \code{\link{plot.wqs}}, \code{\link{print.wqs}}
+Other wqs: 
+\code{\link{coef.wqs}()},
+\code{\link{do.many.wqs}()},
+\code{\link{estimate.wqs.formula}()},
+\code{\link{estimate.wqs}()},
+\code{\link{make.quantile.matrix}()},
+\code{\link{plot.wqs}()},
+\code{\link{print.wqs}()}
 }
 \concept{wqs}
 \keyword{wqs}

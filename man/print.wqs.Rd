@@ -10,22 +10,28 @@
 \item{x}{An object of class WQS, from \code{\link{estimate.wqs}}.}
 
 \item{digits}{minimal number of \emph{significant} digits, see
-    \code{\link{print.default}}.}
+    \code{\link[base]{print.default}}.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{Further arguments passed from other methods to print(). Currently has no effect.}
 }
 \description{
 Prints the fitted WQS model along with the mean weights. Adjusted from print.lm.
 }
 \examples{
-#See \\code{\\link{estimate.wqs}}.
+# See estimate.wqs().
+
+# As base package is always available, there is no need to ever import base.
+#Technically, I am using print.default() method.
 }
 \seealso{
-Other wqs: \code{\link{analyze.individually}},
-  \code{\link{coef.wqs}}, \code{\link{do.many.wqs}},
-  \code{\link{estimate.wqs}},
-  \code{\link{make.quantile.matrix}},
-  \code{\link{plot.wqs}}
+Other wqs: 
+\code{\link{analyze.individually}()},
+\code{\link{coef.wqs}()},
+\code{\link{do.many.wqs}()},
+\code{\link{estimate.wqs.formula}()},
+\code{\link{estimate.wqs}()},
+\code{\link{make.quantile.matrix}()},
+\code{\link{plot.wqs}()}
 }
 \concept{wqs}
 \keyword{wqs}

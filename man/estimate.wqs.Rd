@@ -4,26 +4,33 @@
 \alias{estimate.wqs}
 \title{Weighted Quantile Sum (WQS) Regression}
 \usage{
-estimate.wqs(y, X, Z = NULL, proportion.train = 1, n.quantiles = 4,
-  place.bdls.in.Q1 = if (anyNA(X)) {     TRUE } else {     FALSE },
-  B = 100, b1.pos = TRUE, signal.fn = c("signal.none",
-  "signal.converge.only", "signal.abs", "signal.test.stat"),
-  family = c("gaussian", "binomial", "poisson"), offset = NULL,
-  verbose = FALSE)
+estimate.wqs(
+  y,
+  X,
+  Z = NULL,
+  proportion.train = 1L,
+  n.quantiles = 4L,
+  place.bdls.in.Q1 = if (anyNA(X)) TRUE else FALSE,
+  B = 100L,
+  b1.pos = TRUE,
+  signal.fn = c("signal.none", "signal.converge.only", "signal.abs", "signal.test.stat"),
+  family = c("gaussian", "binomial", "poisson"),
+  offset = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{y}{Outcome: numeric vector or factor. Assumed to follow an exponential family distribution.}
+\item{y}{Outcome: numeric vector or factor. Assumed to be complete, and missing outcomes are ignored. Assumed to follow an exponential family distribution given in \code{family}.}
 
-\item{X}{Components/chemicals to be combined into an index; a numeric matrix or data frame.}
+\item{X}{Components/chemicals to be combined into an index; a numeric matrix or data-frame.}
 
-\item{Z}{Covariates used in WQS. If none, enter NULL. Ideally, a matrix; but Z can be a vector or data frame. Assumed to be complete; observations with missing covariate values are ignored, with a warning.}
+\item{Z}{Any covariates used. Ideally, a numeric matrix, but Z can be a factor, vector or data-frame. Assumed to be complete; observations with missing covariate values are ignored with a warning printed. If none, enter NULL.}
 
-\item{proportion.train}{The proportion of data between 0 and 1 used to train the model. If proportion.train = 1, all the data is used to both train and validate the model. Default: 1.}
+\item{proportion.train}{The proportion of data between 0 and 1 used to train the model. If proportion.train = 1L, all the data is used to both train and validate the model. Default: 1L.}
 
-\item{n.quantiles}{An integer to specify how chemicals will be ranked, e.g. in quartiles (q = 4), deciles (q = 10), or percentiles (q = 100).
-Number of quantiles to be used categorizing the columns of X. Default: 4.}
+\item{n.quantiles}{An integer specifying the number of quantiles in categorizing the columns of X, e.g. in quartiles (q = 4), deciles (q = 10), or percentiles (q = 100). Default: 4L.}
 
-\item{place.bdls.in.Q1}{Logical; if TRUE or X has any missing values, missing values in X are placed in the first quantile of the weighted sum.  Otherwise, the data is complete (no missing data) and the data is split equally into quantiles.}
+\item{place.bdls.in.Q1}{Logical; if TRUE or X has any missing values, missing values in X are placed in the first quantile of the weighted sum.  Otherwise, the data is complete (no missing data) and the data is equally split into quantiles.}
 
 \item{B}{Number of bootstrap samples to be used in estimating the weights in the training dataset. In order to use WQS without bootstrapping, set B = 1. However, Carrico et al 2014 suggests that bootstrap some large number (like 100 or 1000) can increase component selection. In that spirit, we set the default to 100.}
 
@@ -32,81 +39,97 @@ Number of quantiles to be used categorizing the columns of X. Default: 4.}
 \item{signal.fn}{A character value indicating which signal function is used in calculating the mean weight. See details.}
 
 \item{family}{The distribution of outcome y. A character value:
-if equal to "gaussian" a linear model is implemented,
-if equal to "binomial" a logistic model is implemented,
-if equal to "poisson", a log-link rate (or count) model is implemented.
-if equal to "negbinom", a negative binomial model is implemented. BETA-TEST. IF THIS DOESN'T WORK THEN REMOVE HERE --ADDED 5/23/19.
-Default: "gaussian". See \code{\link[stats]{family}} in stats package. Passed to glm2.}
+if equal to "gaussian" a linear model is implemented;
+if equal to "binomial" a logistic model is implemented;
+if equal to "poisson", a log-link (rate or count) model is implemented.
+See \code{\link[stats]{family}} in the \pkg{stats} package. Passed to \pkg{glm2}. Default: "gaussian".}
 
-\item{offset}{The at-risk population used when modeling rates in Poisson regression. A numeric vector of length equal to the length(y).  Default: If there is no offset, set to NULL (converted to a vector of ones inside the function) so a count Poisson regression is done.  Passed to \pkg{glm2}. See details for more information.}
+\item{offset}{The at-risk population used as a numeric vector of length equal to the number of subjects when modeling rates in Poisson regression. Passed to \pkg{glm2}.  Default: If there is no offset, enter NULL.}
 
-\item{verbose}{Logical; if TRUE, prints more information. Useful to check for errors in
-the code. Default: FALSE.}
+\item{verbose}{Logical; if TRUE, prints more information. Useful to check for any errors in the code. Default: FALSE.}
 }
 \value{
 \code{estimate.wqs} returns an object of class "wqs". A list with the following items: (** important) \describe{
   \item{call}{The function call, processed by \pkg{rlist}.}
-  \item{c}{The number of chemicals in mixture, number of columns in X.}
-  \item{n}{The sample size. }
+  \item{C}{The number of chemicals in mixture, number of columns in X.}
+  \item{n}{The sample size.}
   \item{train.index}{Vector, The numerical indices selected to form the training dataset. Useful to do side-by-side comparisons.}
   \item{q.train}{Matrix of quantiles used in training data. }
   \item{q.valid}{Matrix of quantiles used in validation data. }
-  \item{train.comparison}{Dataframe that compares the training and validation datasets to validate equivalence }
-  \item{initial}{Vector: Initial values used in WQS }
-  \item{train.estimates}{Dataframe with rows = B. Summarizes statistics from nonlinear regression in training dataset. See details.}
- \item{processed.weights}{** A c x 2 matrix, mean bootstrapped weights (and their standard errors) after filtering using signal function. Used in calculating the WQS index. }
- \item{WQS}{Vector, The weighted quantile sum estimate based on calculated and processed weights. }
- \item{fit}{** glm2 object of the WQS model fit to validation data. See \code{\link{glm2}{glm2}}.}
- \item{boot.index}{Matrix of bootstrap indices used in training dataset to estimate weights. Its dimension is the length of training dataset with number of columns = B.}
+  \item{train.comparison}{Data-frame that compares the training and validation datasets to validate equivalence }
+  \item{initial}{Vector: Initial values used in WQS.}
+  \item{train.estimates}{Data-frame with rows = B. Summarizes statistics from nonlinear regression in training dataset. See details.}
+ \item{processed.weights}{** A C x 2 matrix, mean bootstrapped weights (and their standard errors) after filtering with the signal function (see \code{signal.fn}). Used to calculate the WQS index.}
+ \item{WQS}{Vector of the weighted quantile sum estimate based on the processed weights. }
+ \item{fit}{** glm2 object of the WQS model fit using the validation data. See \code{\link{glm2}{glm2}}.}
+ \item{boot.index}{Matrix of bootstrap indices used in training dataset to estimate the weights. Its dimension is the length of training dataset with number of columns = B.}
 }
 }
 \description{
-Performs weighted quantile sum (WQS) regression model for continuous, binary, and count outcomes,which was extended from \code{\link[wqs]{wqs.est}} (author: Czarnota) in the \pkg{wqs} package. By default, if there is any missing data, the missing data is assumed to be censored and placed in the first quantile.  Accessory functions (print, coefficient, summary, plot) also accompany each WQS object.
+Performs weighted quantile sum (WQS) regression model for continuous, binary, and count outcomes that was extended from \code{\link[wqs]{wqs.est}} (author: Czarnota) in the \pkg{wqs} package. By default, if there is any missing data, the missing data is assumed to be censored and placed in the first quantile.  Accessory functions (print, coefficient, plot) also accompany each WQS object.
 }
 \details{
-The solnp algorithm, or a nonlinear optimization technique using augmented Lagrange method, is used to estimate the weights in the training set \cite{\link[Rsolnp]{solnp}}. There may be instances that the log likelihood evaluated at the current parameters is too large (NaN); value is reset to be 1e24. We have discovered no issue with this reset. A data frame with object name \emph{train.estimates} that summarizes statistics from the nonlinear regression is returned; it consists of these columns:
+The \cite{\link[Rsolnp]{solnp}} algorithm, or a nonlinear optimization technique using augmented Lagrange method, is used to estimate the weights in the training set. If the log likelihood evaluated at the current parameters is too large (NaN), the log likelihood is reset to be 1e24.
+ A data-frame with object name \emph{train.estimates} that summarizes statistics from the nonlinear regression is returned; it consists of these columns:
 \describe{
-  {beta1}{estimate using solnp}
-  {beta1_glm, SE_beta1, test_stat, pvalue}{estimates of WQS parameter in model using glm2.}
-  {convergence}{logical, if TRUE the solnp solver has converged. See \cite{\link[Rsolnp]{solnp}}.}
-  {weight estimates}{estimates of weight for each bootstrap.}
+  \item{beta1}{estimate using solnp}
+  \item{beta1_glm, SE_beta1, test_stat, pvalue}{estimates of WQS parameter in model using glm2.}
+  \item{convergence}{logical, if TRUE the solnp solver has converged. See \cite{\link[Rsolnp]{solnp}}.}
+  \item{weight estimates}{estimates of weight for each bootstrap.}
 }
-This package uses the \cite{\link[glm2]{glm2}} function in the \emph{glm2} package to fit the model. The \emph{glm2} package is a modified version of the glm function provided.
 
-Signal functions allow the user to adjust what bootstraps are used in calculating the mean weight. The \emph{signal.fn} argument allows the user to choose between four signal functions:
+Signal functions allow the user to adjust what bootstraps are used in calculating the mean weight. Looking at a histogram of the overall mixture effect, which is an element after plotting a WQS object, may help you to choose a signal function. The \emph{signal.fn} argument allows the user to choose between four signal functions:
  \describe{
     \item{signal.none}{Uses all bootstrap-estimated weights in calculating average weight.}
     \item{signal.converge.only}{Uses the estimated weights for the bootstrap samples that converged.}
-    \item{signal.abs}{Applies more weight to the absolute value of test statistic for beta1, the overall mixture effect.}
-    \item{signal.test stat}{Applies more weight to the absolute value of test statistic for beta1, the overall mixture effect.}
+    \item{signal.abs}{Applies more weight to the absolute value of test statistic for beta1, the overall mixture effect in the trained WQS model.}
+    \item{signal.test stat}{Applies more weight to the absolute value of test statistic for beta1, the overall mixture effect in the trained WQS model.}
     }
-Looking at a histogram of the overall mixture effect, which is an element after plotting a WQS object, may help you to choose a signal function.
 
-Rates can be modelled using the offset. The `offset` argument of `estimate.wqs()` function is on the normal scale, so please do not take a logarithm.  The objective function used to model the mean rate of the ith individual lambdai with the offset is:
-\deqn{ lambdai = offset * exp(eta) }
-, where eta is the linear term of a regression and lambdai is the mean count for the ith subject.
+This package uses the \cite{\link[glm2]{glm2}} function in the \pkg{glm2} package to fit the validation model.
+
+The object is a member of the \emph{"wqs"} class; accessory functions include \code{coef}(), \code{print}(), and \code{plot}().
+
+See example 1 in the vignette for details.
 }
 \note{
-No seed is set in this function. Because bootstraps and splitting is random,  a seed should be set  before every use.
+No seed is set in this function.  Because bootstraps and splitting is random, a seed should be set before every use.
 }
-\examples{
-#Example 1: Binary outcome using the example simulated dataset in this package.
- data(simdata87)
- set.seed(23456)
- W.bin4  <- estimate.wqs( y = simdata87$y.scenario, X = simdata87$X.true[,1:9],
-                  B = 10, family = "binomial")
- W.bin4
+\section{Rate WQS Regression}{
 
-#Example 2: Continuous outcome. Use WQSdata example from wqs package.
- if( requireNamespace("wqs", quietly = TRUE) ){
+Rates can be modelled using the offset. The \emph{offset} argument of \code{estimate.wqs()} function is on the normal scale, so please do not take a logarithm.  The objective function used to model the mean rate of the \emph{ith} individual \eqn{\lambda_i} with the offset is:
+\deqn{ \lambda_i = offset * exp(\eta) }
+, where \eqn{\eta} is the linear term of a regression.
+}
+
+\examples{
+# Example 1: Binary outcome using the example simulated dataset in this package.
+data(simdata87)
+set.seed(23456)
+W.bin4  <- estimate.wqs(
+  y = simdata87$y.scenario, X = simdata87$X.true[, 1:9],
+  B = 10, family = "binomial",
+  verbose = TRUE
+)
+W.bin4
+
+# Example 2: Continuous outcome. Use WQSdata example from wqs package.
+\dontrun{
+if (requireNamespace("wqs", quietly = TRUE)) {
   library(wqs)
   data(WQSdata)
   set.seed(23456)
-  Wa <- estimate.wqs (y = WQSdata$y, X = WQSdata[,1:9], B=10)
+  W <- wqs::wqs.est(WQSdata$y, WQSdata[, 1:9], B = 10)
+  Wa <- estimate.wqs (y = WQSdata$y, X = WQSdata[, 1:9], B = 10)
   Wa
- }else{
-  message("you need to install the package wqs for this example")
- }
+} else {
+  message("You need to install the package wqs for this example.")
+}
+}
+
+## More examples are found 02_WQS_Examples.
+## Also checked vs. Czarnota code, as well as thesis data, to verify results.
+
 }
 \references{
 Carrico, C., Gennings, C., Wheeler, D. C., & Factor-Litvak, P. (2014). Characterization of Weighted Quantile Sum Regression for Highly Correlated Data in a Risk Analysis Setting. Journal of Agricultural, Biological, and Environmental Statistics, 20(1), 100–120. https://doi.org/10.1007/s13253-014-0180-3
@@ -116,10 +139,14 @@ Czarnota, J., Gennings, C., Colt, J. S., De Roos, A. J., Cerhan, J. R., Severson
 Czarnota, J., Gennings, C., & Wheeler, D. C. (2015). Assessment of Weighted Quantile Sum Regression for Modeling Chemical Mixtures and Cancer Risk. Cancer Informatics, 14, 159–171. https://doi.org/10.4137/CIN.S17295
 }
 \seealso{
-Other wqs: \code{\link{analyze.individually}},
-  \code{\link{coef.wqs}}, \code{\link{do.many.wqs}},
-  \code{\link{make.quantile.matrix}},
-  \code{\link{plot.wqs}}, \code{\link{print.wqs}}
+Other wqs: 
+\code{\link{analyze.individually}()},
+\code{\link{coef.wqs}()},
+\code{\link{do.many.wqs}()},
+\code{\link{estimate.wqs.formula}()},
+\code{\link{make.quantile.matrix}()},
+\code{\link{plot.wqs}()},
+\code{\link{print.wqs}()}
 }
 \concept{wqs}
 \keyword{imputation}

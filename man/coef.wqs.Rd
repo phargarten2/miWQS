@@ -7,33 +7,38 @@
 \method{coef}{wqs}(object, ...)
 }
 \arguments{
-\item{object}{Object of class WQS, which is output using \code{estimate.wqs}. Or object from class
-miWQS, which is an output using \code{pool.wqs}.}
+\item{object}{An object of class "wqs", usually as a result of \code{\link{estimate.wqs}}.}
 
-\item{...}{Arguments passed on to \code{stats::coef}
-\describe{
-  \item{}{}
-}}
+\item{...}{other arguments.}
 }
 \description{
 An accessor function that returns the coefficients from the validation WQS model,
-a \pkg{glm2} object.
+a \strong{wqs} object.
+}
+\details{
+In a \strong{wqs} object, the \emph{fit} element, a \pkg{glm2} object, is extracted. See \code{\link{glm2}{glm2}}.
 }
 \examples{
-#Use simulated dataset and set seed for reproducibility.
+# Use simulated dataset and set seed for reproducibility.
 data(simdata87)
 set.seed(23456)
-Wa <- estimate.wqs( y = simdata87$y.scenario, X = simdata87$X.true,
-                  B = 10, family = "binomial")
+Wa <- estimate.wqs(
+  y = simdata87$y.scenario, X = simdata87$X.true[, 1:3],
+  B = 10, family = "binomial"
+)
 coef(Wa)
 }
 \seealso{
 \code{\link[stats]{coef}}
 
-Other wqs: \code{\link{analyze.individually}},
-  \code{\link{do.many.wqs}}, \code{\link{estimate.wqs}},
-  \code{\link{make.quantile.matrix}},
-  \code{\link{plot.wqs}}, \code{\link{print.wqs}}
+Other wqs: 
+\code{\link{analyze.individually}()},
+\code{\link{do.many.wqs}()},
+\code{\link{estimate.wqs.formula}()},
+\code{\link{estimate.wqs}()},
+\code{\link{make.quantile.matrix}()},
+\code{\link{plot.wqs}()},
+\code{\link{print.wqs}()}
 }
 \concept{wqs}
 \keyword{wqs}
